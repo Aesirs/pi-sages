@@ -1,5 +1,5 @@
 {
-  "name": "sages",
+  "name": "pi-sages",
   "version": "1.0.0",
   "description": "A guild of sages for web research — search, crawl, and extract with Firecrawl, Tavily, Exa, Brave, and DuckDuckGo",
   "main": "dist/index.js",
@@ -12,7 +12,7 @@
   ],
   "keywords": [
     "pi-package",
-    "sages",
+    "pi-sages",
     "web-search",
     "firecrawl",
     "tavily",

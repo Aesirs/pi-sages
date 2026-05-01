@@ -6,7 +6,7 @@ A guild of sages for web research. This pi package registers tools that let the 
 
 ```
 sages/
-├── package.json                 # Package manifest: name "sages", pi extensions/skills entry points
+├── package.json                 # Package manifest: name "pi-sages", pi extensions/skills entry points
 ├── tsconfig.json                # TypeScript config: NodeNext, strict, ES2022
 ├── vitest.config.ts             # Test runner config (placeholder)
 │
