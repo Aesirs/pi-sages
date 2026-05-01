@@ -1,6 +1,6 @@
 ---
 name: loremaster
-description: Web research skill powered by the Sages guild. Guides the model on when and how to use scry, delve, decipher, and commune for searching, crawling, and extracting web content. Summon order picks the best available sage automatically.
+description: Web research skill powered by the Sages. Guides the model on when and how to use scry, delve, decipher, and commune for searching, crawling, and extracting web content. Summon order picks the best available sage automatically.
 ---
 
 # Loremaster
