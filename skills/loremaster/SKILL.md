@@ -5,7 +5,7 @@ description: A guild of sages for web research. Search, crawl, and extract knowl
 
 # Loremaster
 
-Web research skill powered by the Sages guild. Summon sages to scry, delve, and decipher the web.
+Web research skill powered by the Sages. Summon a sage to scry, delve, and decipher the web.
 
 ## Setup
 
