@@ -30,10 +30,10 @@ The model never chooses the provider — the first available sage in your priori
 ## ⚔️ Command
 
 ```bash
-/guild                    # Enter the Sages Guild hall
-/guild set-key <sage> <key>
-/guild clear-key <sage>
-/guild priority <sage1> <sage2> ...
+/sages                    # Enter the Sages Guild hall
+/sages set-key <sage> <key>
+/sages clear-key <sage>
+/sages priority <sage1> <sage2> ...
 ```
 
 Interactive mode lets you inspect the council, sign/break contracts, and set summon order via menus.
@@ -67,7 +67,7 @@ export FIRECRAWL_API_KEY="fc-..."
 export EXA_API_KEY="exa-..."
 ```
 
-Or use `/guild` to manage keys interactively (stored in auth.json).
+Or use `/sages` to manage keys interactively (stored in auth.json).
 
 ## 📜 Skill: Loremaster
 
@@ -95,14 +95,14 @@ Override via env var:
 export SAGE_SUMMON_ORDER='tavily,brave,duckduckgo'
 ```
 
-Or interactively via `/guild`.
+Or interactively via `/sages`.
 
 ## 📁 Structure
 
 ```
 pi-sages/
 ├── extensions/
-│   └── sages.ts          # Pi extension: tools + /guild command
+│   └── sages.ts          # Pi extension: tools + /sages command
 ├── src/
 │   ├── types.ts           # Sage, SageArt, SageProfile, result types
 │   ├── base.ts            # Abstract Sage class
@@ -110,7 +110,7 @@ pi-sages/
 │   ├── resolver.ts        # Summoner (instantiates sages)
 │   ├── selector.ts        # SummonOrder (priority-based selection)
 │   ├── registry.ts        # Sage registry and factory
-│   ├── commands.ts        # /guild command implementation
+│   ├── commands.ts        # /sages command implementation
 │   ├── providers/         # Individual sage implementations
 │   └── ...
 ├── skills/

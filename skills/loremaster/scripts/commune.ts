@@ -42,7 +42,7 @@ async function main(): Promise<void> {
   }
 
   if (active.length === 0) {
-    console.error('No search sages are bound. Set at least one API key environment variable or use /guild.');
+    console.error('No search sages are bound. Set at least one API key environment variable or use /sages.');
     process.exit(1);
   }
 

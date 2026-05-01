@@ -25,7 +25,7 @@ export BRAVE_API_KEY="your-key"
 # DuckDuckGo requires no API key
 ```
 
-Or use the `/guild` command in pi to manage contracts interactively.
+Or use the `/sages` command in pi to manage contracts interactively.
 
 ## Scry (Search)
 

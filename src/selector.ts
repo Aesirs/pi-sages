@@ -67,7 +67,7 @@ export class SummonOrder {
       lines.push(`  ${icon} ${meta.label} (${id})`);
     }
     if (available.length === 0) {
-      lines.push(`\nNo sages are configured for ${art}. Use /guild to add API keys.`);
+      lines.push(`\nNo sages are configured for ${art}. Use /sages to add API keys.`);
     }
     return lines.join('\n');
   }

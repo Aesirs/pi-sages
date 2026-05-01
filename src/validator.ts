@@ -15,7 +15,7 @@ export function assertSage(id: string, art: SageArt): SageProfile {
 
 export function assertBound(summoner: Summoner, meta: SageProfile): void {
   if (!summoner.isConfigured(meta)) {
-    throw new Error(`Sage "${meta.id}" is not bound. Use /guild to add an API key.`);
+    throw new Error(`Sage "${meta.id}" is not bound. Use /sages to add an API key.`);
   }
 }
 

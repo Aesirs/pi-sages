@@ -163,7 +163,7 @@ export default function sagesExtension(pi: ExtensionAPI) {
       }
 
       if (active.length === 0) {
-        throw new Error('No search sages are bound. Use /guild to add API keys.');
+        throw new Error('No search sages are bound. Use /sages to add API keys.');
       }
 
       onUpdate?.({ content: [{ type: 'text', text: `Communing with ${active.length} sages for "${params.query}"...` }], details: {} });

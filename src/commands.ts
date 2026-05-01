@@ -30,14 +30,14 @@ function buildStatusMessage(vault: VaultKeeper, order: SummonOrder): string {
 async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promise<void> {
   while (true) {
     const action = await ctx.ui.select('Sage Contracts:', [
-      'Sign contract (set key)',
-      'Break contract (clear key)',
-      'View contracts',
+      'Sign contract (Set Key)',
+      'Break contract (Clear Key)',
+      'View contracts (View Keys)',
       'Back',
     ]);
     if (!action || action === 'Back') return;
 
-    if (action === 'View contracts') {
+    if (action === 'View contracts (View Keys)') {
       const lines = ['Stored sage contracts:'];
       let hasAny = false;
       for (const meta of ALL_SAGE_PROFILES) {
@@ -55,7 +55,7 @@ async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promi
       continue;
     }
 
-    if (action === 'Sign contract (set key)') {
+    if (action === 'Sign contract (Set Key)') {
       const keySages = ALL_SAGE_PROFILES.filter((m) => m.needsKey);
       const lines = ['Current contract status:'];
       for (const meta of keySages) {
@@ -92,7 +92,7 @@ async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promi
       continue;
     }
 
-    if (action === 'Break contract (clear key)') {
+    if (action === 'Break contract (Clear Key)') {
       const boundSages = ALL_SAGE_PROFILES.filter((m) => m.needsKey && vault.has(m.id));
       if (boundSages.length === 0) {
         ctx.ui.notify('No stored contracts to break.', 'info');
@@ -168,7 +168,7 @@ async function configureSummonOrder(order: SummonOrder, ctx: ExtensionContext): 
 }
 
 export function registerCommands(pi: ExtensionAPI, vault: VaultKeeper, order: SummonOrder): void {
-  pi.registerCommand('guild', {
+  pi.registerCommand('sages', {
     description: 'Enter the Sages Guild: view status, manage contracts, configure summon order',
     handler: async (args, ctx: ExtensionContext) => {
       // Non-interactive: print status and exit
@@ -215,19 +215,19 @@ export function registerCommands(pi: ExtensionAPI, vault: VaultKeeper, order: Su
 
       // ── Interactive menu loop ────────────────────────────────────────────
       while (true) {
-        const choice = await ctx.ui.select('Sages Guild:', [
-          'Inspect the Council',
-          'Manage Contracts',
-          'Set Summon Order',
+        const choice = await ctx.ui.select('Sages:', [
+          'Inspect the Council (View Status)',
+          'Manage Contracts (API Keys)',
+          'Set Summon Order (Priority)',
           'Leave',
         ]);
         if (!choice || choice === 'Leave') return;
 
-        if (choice === 'Inspect the Council') {
+        if (choice === 'Inspect the Council (View Status)') {
           ctx.ui.notify(buildStatusMessage(vault, order), 'info');
-        } else if (choice === 'Manage Contracts') {
+        } else if (choice === 'Manage Contracts (API Keys)') {
           await manageContracts(vault, ctx);
-        } else if (choice === 'Set Summon Order') {
+        } else if (choice === 'Set Summon Order (Priority)') {
           await configureSummonOrder(order, ctx);
         }
       }
