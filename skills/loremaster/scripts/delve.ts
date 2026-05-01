@@ -7,13 +7,6 @@ import {
   type SageProfile,
 } from '../../../src/index.js';
 
-function requireEnv(key: string): void {
-  if (!process.env[key]) {
-    console.error(`Missing environment variable: ${key}`);
-    process.exit(1);
-  }
-}
-
 async function main(): Promise<void> {
   const [, , sageArg, url, limitArg] = process.argv;
 
@@ -70,7 +63,14 @@ async function main(): Promise<void> {
   }
 
   if (selectedMeta.needsKey) {
-    requireEnv(`${selectedId.toUpperCase()}_API_KEY`);
+    const key = vault.get(selectedId);
+    if (!key) {
+      console.error(
+        `No API key found for ${selectedMeta.label}. ` +
+          `Set ${selectedId.toUpperCase()}_API_KEY env var or store it via /sages.`,
+      );
+      process.exit(1);
+    }
   }
 
   const sage = summoner.resolve(selectedId);
