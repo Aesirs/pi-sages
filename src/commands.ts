@@ -1,10 +1,10 @@
 import type { ExtensionAPI, ExtensionContext } from '@mariozechner/pi-coding-agent';
 import { ALL_SAGE_PROFILES } from './registry.js';
-import { VaultKeeper, maskKey } from './auth.js';
-import { SummonOrder } from './selector.js';
+import { CredentialStore, maskKey } from './auth.js';
+import { SageSelector } from './selector.js';
 
-function buildStatusMessage(vault: VaultKeeper, order: SummonOrder): string {
-  const lines = ['Sages Guild Status:'];
+function buildStatusMessage(vault: CredentialStore, order: SageSelector): string {
+  const lines = ['Sages Status:'];
   for (const meta of ALL_SAGE_PROFILES) {
     const { configured, source } = vault.status(meta);
     const icon = configured ? '🟢' : '🔴';
@@ -18,8 +18,8 @@ function buildStatusMessage(vault: VaultKeeper, order: SummonOrder): string {
     const caps = meta.capabilities.join('/');
     lines.push(`  ${icon} ${meta.label} (${meta.id}): ${src} [${caps}]`);
   }
-  lines.push('\nSummon order:');
-  for (const id of order.getOrder()) {
+  lines.push('\nPriority:');
+  for (const id of order.getPriority()) {
     const meta = ALL_SAGE_PROFILES.find((m) => m.id === id);
     if (!meta) continue;
     lines.push(`  ${meta.label} (${meta.id})`);
@@ -27,18 +27,18 @@ function buildStatusMessage(vault: VaultKeeper, order: SummonOrder): string {
   return lines.join('\n');
 }
 
-async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promise<void> {
+async function manageKeys(vault: CredentialStore, ctx: ExtensionContext): Promise<void> {
   while (true) {
-    const action = await ctx.ui.select('Sage Contracts:', [
-      'Sign contract (Set Key)',
-      'Break contract (Clear Key)',
-      'View contracts (View Keys)',
+    const action = await ctx.ui.select('API Keys:', [
+      'Set Key',
+      'Clear Key',
+      'View Keys',
       'Back',
     ]);
     if (!action || action === 'Back') return;
 
-    if (action === 'View contracts (View Keys)') {
-      const lines = ['Stored sage contracts:'];
+    if (action === 'View Keys') {
+      const lines = ['Stored API keys:'];
       let hasAny = false;
       for (const meta of ALL_SAGE_PROFILES) {
         if (!meta.needsKey) continue;
@@ -50,14 +50,14 @@ async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promi
           lines.push(`  ${meta.id}: not set`);
         }
       }
-      if (!hasAny) lines.push('\nNo contracts stored. Use "Sign contract" to add them.');
+      if (!hasAny) lines.push('\nNo keys stored. Use "Set Key" to add them.');
       ctx.ui.notify(lines.join('\n'), 'info');
       continue;
     }
 
-    if (action === 'Sign contract (Set Key)') {
+    if (action === 'Set Key') {
       const keySages = ALL_SAGE_PROFILES.filter((m) => m.needsKey);
-      const lines = ['Current contract status:'];
+      const lines = ['Current key status:'];
       for (const meta of keySages) {
         const { source } = vault.status(meta);
         const stored = vault.peek(meta.id);
@@ -72,7 +72,7 @@ async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promi
       ctx.ui.notify(lines.join('\n'), 'info');
 
       const choice = await ctx.ui.select(
-        'Which sage do you want to sign a contract with?',
+        'Which sage do you want to set a key for?',
         keySages.map((m) => `${m.label} (${m.id})`),
       );
       if (!choice) continue;
@@ -88,43 +88,43 @@ async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promi
       }
 
       vault.set(meta.id, key.trim());
-      ctx.ui.notify(`Contract signed with ${meta.label} (${maskKey(key.trim())}) → sages.json`, 'info');
+      ctx.ui.notify(`Key set for ${meta.label} (${maskKey(key.trim())}) → sages.json`, 'info');
       continue;
     }
 
-    if (action === 'Break contract (Clear Key)') {
-      const boundSages = ALL_SAGE_PROFILES.filter((m) => m.needsKey && vault.has(m.id));
-      if (boundSages.length === 0) {
-        ctx.ui.notify('No stored contracts to break.', 'info');
+    if (action === 'Clear Key') {
+      const configuredSages = ALL_SAGE_PROFILES.filter((m) => m.needsKey && vault.has(m.id));
+      if (configuredSages.length === 0) {
+        ctx.ui.notify('No stored keys to clear.', 'info');
         continue;
       }
 
       const choice = await ctx.ui.select(
-        'Which contract do you want to break?',
-        boundSages.map((m) => `${m.label} (${m.id}) — ${vault.peek(m.id) ?? ''}`),
+        'Which key do you want to clear?',
+        configuredSages.map((m) => `${m.label} (${m.id}) — ${vault.peek(m.id) ?? ''}`),
       );
       if (!choice) continue;
 
       const id = choice.match(/\(([^)]+)\)/)?.[1];
-      const meta = boundSages.find((m) => m.id === id);
+      const meta = configuredSages.find((m) => m.id === id);
       if (!meta) continue;
 
-      const ok = await ctx.ui.confirm('Break contract?', `Remove stored key for ${meta.label}?`);
+      const ok = await ctx.ui.confirm('Clear key?', `Remove stored key for ${meta.label}?`);
       if (!ok) {
         ctx.ui.notify('Aborted.', 'info');
         continue;
       }
 
       vault.remove(meta.id);
-      ctx.ui.notify(`Broke contract with ${meta.label}. Key removed from sages.json.`, 'info');
+      ctx.ui.notify(`Cleared key for ${meta.label}. Key removed from sages.json.`, 'info');
       continue;
     }
   }
 }
 
-async function configureSummonOrder(order: SummonOrder, ctx: ExtensionContext): Promise<void> {
-  const current = order.getOrder();
-  const lines = ['Current summon order:'];
+async function configurePriority(order: SageSelector, ctx: ExtensionContext): Promise<void> {
+  const current = order.getPriority();
+  const lines = ['Current priority:'];
   for (const id of current) {
     const meta = ALL_SAGE_PROFILES.find((m) => m.id === id);
     if (!meta) continue;
@@ -141,8 +141,8 @@ async function configureSummonOrder(order: SummonOrder, ctx: ExtensionContext): 
 
     const position = orderIds.length === 0 ? 'first' : 'next';
     const choice = await ctx.ui.select(
-      `Select the ${position} sage in summon order:`,
-      remaining.map((m) => `${m.label} (${m.id})${m.needsKey ? ' — requires contract' : ''}`),
+      `Select the ${position} sage in priority:`,
+      remaining.map((m) => `${m.label} (${m.id})${m.needsKey ? ' — requires key' : ''}`),
     );
     if (!choice) break;
 
@@ -151,25 +151,25 @@ async function configureSummonOrder(order: SummonOrder, ctx: ExtensionContext): 
     orderIds.push(id);
     used.add(id);
 
-    const addAnother = await ctx.ui.confirm('Add another sage?', 'Add another sage to the summon order?');
+    const addAnother = await ctx.ui.confirm('Add another sage?', 'Add another sage to the priority?');
     if (!addAnother) break;
   }
 
   if (orderIds.length === 0) {
-    ctx.ui.notify('No sages selected. Summon order unchanged.', 'warning');
+    ctx.ui.notify('No sages selected. Priority unchanged.', 'warning');
     return;
   }
 
-  order.setOrder(orderIds);
+  order.setPriority(orderIds);
   const pretty = orderIds
     .map((id) => ALL_SAGE_PROFILES.find((m) => m.id === id)?.label ?? id)
     .join(' > ');
-  ctx.ui.notify(`Summon order set to: ${pretty}`, 'info');
+  ctx.ui.notify(`Priority set to: ${pretty}`, 'info');
 }
 
-export function registerCommands(pi: ExtensionAPI, vault: VaultKeeper, order: SummonOrder): void {
+export function registerCommands(pi: ExtensionAPI, vault: CredentialStore, order: SageSelector): void {
   pi.registerCommand('sages', {
-    description: 'Enter the Sages Guild: view status, manage contracts, configure summon order',
+    description: 'Sages: view status, manage API keys, configure priority',
     handler: async (args, ctx: ExtensionContext) => {
       // Non-interactive: print status and exit
       if (!ctx.hasUI) {
@@ -184,20 +184,20 @@ export function registerCommands(pi: ExtensionAPI, vault: VaultKeeper, order: Su
         const key = parts.slice(2).join(' ').trim();
         const meta = ALL_SAGE_PROFILES.find((m) => m.id === id);
         if (!meta || !meta.needsKey) {
-          ctx.ui.notify(`Unknown sage or no contract needed: ${id}`, 'warning');
+          ctx.ui.notify(`Unknown sage or no key needed: ${id}`, 'warning');
           return;
         }
         vault.set(id, key);
-        ctx.ui.notify(`Contract signed with ${meta.label} (${maskKey(key)}) → sages.json`, 'info');
+        ctx.ui.notify(`Key set for ${meta.label} (${maskKey(key)}) → sages.json`, 'info');
         return;
       }
       if (parts[0] === 'clear-key' && parts.length >= 2) {
         const id = parts[1]!.toLowerCase();
         if (vault.has(id)) {
           vault.remove(id);
-          ctx.ui.notify(`Broke contract with ${id}. Key removed from sages.json.`, 'info');
+          ctx.ui.notify(`Cleared key for ${id}. Key removed from sages.json.`, 'info');
         } else {
-          ctx.ui.notify(`No stored contract with ${id}.`, 'info');
+          ctx.ui.notify(`No stored key for ${id}.`, 'info');
         }
         return;
       }
@@ -208,27 +208,27 @@ export function registerCommands(pi: ExtensionAPI, vault: VaultKeeper, order: Su
           ctx.ui.notify(`Unknown sage(s): ${invalid.join(', ')}`, 'warning');
           return;
         }
-        order.setOrder(ids);
-        ctx.ui.notify(`Summon order set to: ${ids.join(' > ')}`, 'info');
+        order.setPriority(ids);
+        ctx.ui.notify(`Priority set to: ${ids.join(' > ')}`, 'info');
         return;
       }
 
       // ── Interactive menu loop ────────────────────────────────────────────
       while (true) {
         const choice = await ctx.ui.select('Sages:', [
-          'Inspect the Council (View Status)',
-          'Manage Contracts (API Keys)',
-          'Set Summon Order (Priority)',
+          'View Status',
+          'Manage API Keys',
+          'Set Priority',
           'Leave',
         ]);
         if (!choice || choice === 'Leave') return;
 
-        if (choice === 'Inspect the Council (View Status)') {
+        if (choice === 'View Status') {
           ctx.ui.notify(buildStatusMessage(vault, order), 'info');
-        } else if (choice === 'Manage Contracts (API Keys)') {
-          await manageContracts(vault, ctx);
-        } else if (choice === 'Set Summon Order (Priority)') {
-          await configureSummonOrder(order, ctx);
+        } else if (choice === 'Manage API Keys') {
+          await manageKeys(vault, ctx);
+        } else if (choice === 'Set Priority') {
+          await configurePriority(order, ctx);
         }
       }
     },

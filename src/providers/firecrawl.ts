@@ -2,7 +2,7 @@ import Firecrawl from '@mendable/firecrawl-js';
 import type { SearchOptions, SearchResult, CrawlOptions, CrawlResult, SageProfile, ExtractResult } from '../types.js';
 import { Sage } from '../base.js';
 
-export interface FirecrawlContract {
+export interface FirecrawlConfig {
   apiKey: string;
   apiUrl?: string;
 }
@@ -17,7 +17,7 @@ export class FirecrawlSage extends Sage {
 
   private client: Firecrawl;
 
-  constructor(config: FirecrawlContract) {
+  constructor(config: FirecrawlConfig) {
     super();
     this.client = new Firecrawl({ apiKey: config.apiKey, apiUrl: config.apiUrl ?? null });
   }

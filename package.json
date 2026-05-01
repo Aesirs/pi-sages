@@ -1,7 +1,7 @@
 {
   "name": "pi-sages",
   "version": "1.0.0",
-  "description": "A guild of sages for web research — search, crawl, and extract with Firecrawl, Tavily, Exa, Brave, and DuckDuckGo",
+  "description": "Web research providers for pi — search, crawl, and extract with Firecrawl, Tavily, Exa, Brave, and DuckDuckGo",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",

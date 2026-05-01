@@ -1,26 +1,26 @@
-import { Summoner } from './resolver.js';
+import { SageResolver } from './resolver.js';
 import { ALL_SAGE_PROFILES } from './registry.js';
-import { SagesStorage } from './storage.js';
-import type { SageArt, SageProfile } from './types.js';
+import { SageConfigStore } from './storage.js';
+import type { SageCapability, SageProfile } from './types.js';
 
-const DEFAULT_SUMMON_ORDER = ['tavily', 'brave', 'firecrawl', 'exa', 'duckduckgo'];
+const DEFAULT_PRIORITY = ['tavily', 'brave', 'firecrawl', 'exa', 'duckduckgo'];
 
-export class SummonOrder {
+export class SageSelector {
   private order: string[];
-  private storage: SagesStorage;
+  private storage: SageConfigStore;
 
   constructor(
-    private summoner: Summoner,
+    private resolver: SageResolver,
     customOrder?: string[],
   ) {
-    this.storage = new SagesStorage();
-    const env = this.loadEnvOrder();
-    const stored = this.storage.getSummonOrder();
-    this.order = env ?? customOrder ?? stored ?? [...DEFAULT_SUMMON_ORDER];
+    this.storage = new SageConfigStore();
+    const env = this.loadEnvPriority();
+    const stored = this.storage.getPriority();
+    this.order = env ?? customOrder ?? stored ?? [...DEFAULT_PRIORITY];
   }
 
-  private loadEnvOrder(): string[] | undefined {
-    const raw = process.env.SAGE_SUMMON_ORDER;
+  private loadEnvPriority(): string[] | undefined {
+    const raw = process.env.SAGE_PRIORITY;
     if (!raw) return undefined;
     try {
       const parsed = JSON.parse(raw);
@@ -31,48 +31,48 @@ export class SummonOrder {
     }
   }
 
-  setOrder(providers: string[]): void {
+  setPriority(providers: string[]): void {
     this.order = providers;
-    this.storage.setSummonOrder(providers);
+    this.storage.setPriority(providers);
   }
 
-  getOrder(): string[] {
+  getPriority(): string[] {
     return [...this.order];
   }
 
-  select(art: SageArt): { meta: SageProfile; id: string } | null {
+  select(capability: SageCapability): { meta: SageProfile; id: string } | null {
     for (const id of this.order) {
       const meta = ALL_SAGE_PROFILES.find((m) => m.id === id);
       if (!meta) continue;
-      if (!meta.capabilities.includes(art)) continue;
-      if (!this.summoner.isConfigured(meta)) continue;
+      if (!meta.capabilities.includes(capability)) continue;
+      if (!this.resolver.isConfigured(meta)) continue;
       return { meta, id };
     }
     return null;
   }
 
-  getAvailableSages(art: SageArt): SageProfile[] {
+  getAvailableSages(capability: SageCapability): SageProfile[] {
     return ALL_SAGE_PROFILES.filter(
-      (m) => m.capabilities.includes(art) && this.summoner.isConfigured(m),
+      (m) => m.capabilities.includes(capability) && this.resolver.isConfigured(m),
     );
   }
 
-  buildAvailabilityMessage(art: SageArt): string {
-    const available = this.getAvailableSages(art);
+  buildAvailabilityMessage(capability: SageCapability): string {
+    const available = this.getAvailableSages(capability);
     const availableIds = new Set(available.map((m) => m.id));
 
     const lines: string[] = [];
-    lines.push(`Summon order (first available with ${art} is used):`);
+    lines.push(`Priority (first available with ${capability} is used):`);
     for (const id of this.order) {
       const meta = ALL_SAGE_PROFILES.find((m) => m.id === id);
       if (!meta) continue;
-      const supports = meta.capabilities.includes(art);
+      const supports = meta.capabilities.includes(capability);
       const configured = availableIds.has(id);
-      const icon = supports ? (configured ? '🟢' : '🟡 not configured') : `🔴 no ${art}`;
+      const icon = supports ? (configured ? '🟢' : '🟡 not configured') : `🔴 no ${capability}`;
       lines.push(`  ${icon} ${meta.label} (${id})`);
     }
     if (available.length === 0) {
-      lines.push(`\nNo sages are configured for ${art}. Use /sages to add API keys.`);
+      lines.push(`\nNo sages are configured for ${capability}. Use /sages to add API keys.`);
     }
     return lines.join('\n');
   }

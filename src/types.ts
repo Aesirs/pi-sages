@@ -2,7 +2,7 @@
  * Unified types for all web search/crawl sages
  */
 
-export type SageArt = 'search' | 'crawl' | 'extract';
+export type SageCapability = 'search' | 'crawl' | 'extract';
 
 export interface SageProfile {
   /** Machine identifier (lowercase, kebab-case) */
@@ -10,7 +10,7 @@ export interface SageProfile {
   /** Human-readable label */
   readonly label: string;
   /** What this sage can do */
-  readonly capabilities: readonly SageArt[];
+  readonly capabilities: readonly SageCapability[];
   /** Whether an API key is required */
   readonly needsKey: boolean;
 }
@@ -66,7 +66,7 @@ export interface Sage {
   extract?(urls: string[], options?: Record<string, unknown>): Promise<ExtractResult[]>;
 }
 
-export interface SageContract {
+export interface SageConfig {
   apiKey: string;
   baseUrl?: string;
   timeout?: number;

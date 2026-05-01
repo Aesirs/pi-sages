@@ -1,42 +1,42 @@
 # 🏛️ pi-sages
 
-A guild of sages for web research. Deterministic, priority-based provider selection — no more guessing which search API to use.
+Web research providers for pi. Deterministic, priority-based provider selection — no more guessing which search API to use.
 
-## The Guild
+## Providers
 
-Each web provider is a **Sage** with their own arts:
+Each web provider is a **Sage** with its own capabilities:
 
-| Sage | Arts | Needs Contract |
+| Sage | Capabilities | Needs Key |
 |---|---|---|
-| **Tavily** | scry, delve, decipher | 🟢 |
-| **Brave** | scry | 🟢 |
-| **Firecrawl** | scry, delve, decipher | 🟢 |
-| **Exa** | scry, delve, decipher | 🟢 |
-| **DuckDuckGo** | scry | 🔴 |
+| **Tavily** | search, crawl, extract | 🟢 |
+| **Brave** | search | 🟢 |
+| **Firecrawl** | search, crawl, extract | 🟢 |
+| **Exa** | search, crawl, extract | 🟢 |
+| **DuckDuckGo** | search | 🔴 |
 
 ## 🔮 Tools
 
-The model summons sages automatically based on your configured **Summon Order**:
+The model selects sages automatically based on your configured **Priority**:
 
-| Tool | Art | Description |
+| Tool | Capability | Description |
 |---|---|---|
-| `scry` | search | Gaze into the weave for information, docs, news |
-| `delve` | crawl | Descend into a URL, extract full page content |
-| `decipher` | extract | Study URLs closely, extract structured lore |
-| `commune` | search | Convene the full council, deduplicated results |
+| `search` | search | Search the web for information, docs, news |
+| `crawl` | crawl | Crawl a URL, extract full page content |
+| `extract` | extract | Extract structured content from URLs |
+| `multiSearch` | search | Search across all sages, deduplicated results |
 
-The model never chooses the provider — the first available sage in your priority list is summoned automatically.
+The model never chooses the provider — the first available sage in your priority list is selected automatically.
 
 ## ⚔️ Command
 
 ```bash
-/sages                    # Enter the Sages Guild hall
+/sages                    # Open sages menu
 /sages set-key <sage> <key>
 /sages clear-key <sage>
 /sages priority <sage1> <sage2> ...
 ```
 
-Interactive mode lets you inspect the council, sign/break contracts, and set summon order via menus.
+Interactive mode lets you view status, manage API keys, and set priority via menus.
 
 ## 📦 Installation
 
@@ -74,25 +74,25 @@ Or use `/sages` to manage keys interactively (stored in `sages.json`).
 This package includes the **loremaster** skill for standalone CLI scripts:
 
 ```bash
-# Scry (search)
-npx tsx skills/loremaster/scripts/scry.ts "latest rust features" 5
+# Search
+npx tsx skills/loremaster/scripts/search.ts "latest rust features" 5
 
-# Delve (crawl)
-npx tsx skills/loremaster/scripts/delve.ts "https://example.com"
+# Crawl
+npx tsx skills/loremaster/scripts/crawl.ts "https://example.com"
 
-# Commune (multi-provider)
-npx tsx skills/loremaster/scripts/commune.ts "solidjs vs react" 3
+# Multi-provider
+npx tsx skills/loremaster/scripts/multiSearch.ts "solidjs vs react" 3
 ```
 
 ## ⚙️ Configuration
 
-### Summon Order
+### Priority
 
 Default: `tavily → brave → firecrawl → exa → duckduckgo`
 
 Override via env var:
 ```bash
-export SAGE_SUMMON_ORDER='tavily,brave,duckduckgo'
+export SAGE_PRIORITY='tavily,brave,duckduckgo'
 ```
 
 Or interactively via `/sages`.
@@ -104,11 +104,11 @@ pi-sages/
 ├── extensions/
 │   └── sages.ts          # Pi extension: tools + /sages command
 ├── src/
-│   ├── types.ts           # Sage, SageArt, SageProfile, result types
+│   ├── types.ts           # Sage, SageCapability, SageProfile, result types
 │   ├── base.ts            # Abstract Sage class
-│   ├── auth.ts            # VaultKeeper (API key management)
-│   ├── resolver.ts        # Summoner (instantiates sages)
-│   ├── selector.ts        # SummonOrder (priority-based selection)
+│   ├── auth.ts            # CredentialStore (API key management)
+│   ├── resolver.ts        # SageResolver (instantiates sages)
+│   ├── selector.ts        # SageSelector (priority-based selection)
 │   ├── registry.ts        # Sage registry and factory
 │   ├── commands.ts        # /sages command implementation
 │   ├── providers/         # Individual sage implementations

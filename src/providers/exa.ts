@@ -2,7 +2,7 @@ import { Exa } from 'exa-js';
 import type { SearchOptions, SearchResult, CrawlOptions, CrawlResult, SageProfile, ExtractResult } from '../types.js';
 import { Sage } from '../base.js';
 
-export interface ExaContract {
+export interface ExaConfig {
   apiKey: string;
 }
 
@@ -16,7 +16,7 @@ export class ExaSage extends Sage {
 
   private client: Exa;
 
-  constructor(config: ExaContract) {
+  constructor(config: ExaConfig) {
     super();
     this.client = new Exa(config.apiKey);
   }

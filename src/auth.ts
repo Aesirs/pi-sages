@@ -1,16 +1,16 @@
 import type { SageProfile } from './types.js';
-import { SagesStorage } from './storage.js';
+import { SageConfigStore } from './storage.js';
 
 export function maskKey(key: string): string {
   if (key.length <= 8) return '***';
   return `${key.slice(0, 4)}...${key.slice(-4)}`;
 }
 
-export class VaultKeeper {
-  private storage: SagesStorage;
+export class CredentialStore {
+  private storage: SageConfigStore;
 
   constructor() {
-    this.storage = new SagesStorage();
+    this.storage = new SageConfigStore();
   }
 
   get(name: string): string | undefined {

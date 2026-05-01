@@ -3,7 +3,7 @@ import * as cheerio from 'cheerio';
 import type { SearchOptions, SearchResult, SageProfile } from '../types.js';
 import { Sage } from '../base.js';
 
-export interface DuckDuckGoContract {
+export interface DuckDuckGoConfig {
   baseUrl?: string;
 }
 
@@ -17,7 +17,7 @@ export class DuckDuckGoSage extends Sage {
 
   private baseUrl: string;
 
-  constructor(config?: DuckDuckGoContract) {
+  constructor(config?: DuckDuckGoConfig) {
     super();
     this.baseUrl = config?.baseUrl ?? 'https://html.duckduckgo.com/html';
   }

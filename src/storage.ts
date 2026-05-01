@@ -2,14 +2,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { getAgentDir } from '@mariozechner/pi-coding-agent';
 
-export interface SagesConfig {
+export interface SageConfig {
   apiKeys?: Record<string, string>;
-  summonOrder?: string[];
+  priority?: string[];
 }
 
 const CONFIG_FILE_NAME = 'sages.json';
 
-export class SagesStorage {
+export class SageConfigStore {
   private configPath: string;
 
   constructor() {
@@ -23,19 +23,19 @@ export class SagesStorage {
     }
   }
 
-  private load(): SagesConfig {
+  private load(): SageConfig {
     if (!existsSync(this.configPath)) {
       return {};
     }
     try {
       const raw = readFileSync(this.configPath, 'utf-8');
-      return JSON.parse(raw) as SagesConfig;
+      return JSON.parse(raw) as SageConfig;
     } catch {
       return {};
     }
   }
 
-  private save(config: SagesConfig): void {
+  private save(config: SageConfig): void {
     this.ensureDir();
     writeFileSync(this.configPath, JSON.stringify(config, null, 2) + '\n', 'utf-8');
   }
@@ -63,13 +63,13 @@ export class SagesStorage {
     return !!this.load().apiKeys?.[name];
   }
 
-  getSummonOrder(): string[] | undefined {
-    return this.load().summonOrder;
+  getPriority(): string[] | undefined {
+    return this.load().priority;
   }
 
-  setSummonOrder(order: string[]): void {
+  setPriority(order: string[]): void {
     const config = this.load();
-    config.summonOrder = order;
+    config.priority = order;
     this.save(config);
   }
 }

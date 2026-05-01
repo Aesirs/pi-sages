@@ -1,6 +1,6 @@
 import {
-  VaultKeeper,
-  Summoner,
+  CredentialStore,
+  SageResolver,
   ALL_SAGE_PROFILES,
   type SearchResult,
   type Sage,
@@ -24,29 +24,29 @@ async function main(): Promise<void> {
   const [, , query, limitArg] = process.argv;
 
   if (!query) {
-    console.error('Usage: commune.ts "query" [limit-per-sage]');
+    console.error('Usage: multiSearch.ts "query" [limit-per-sage]');
     process.exit(1);
   }
 
   const limit = limitArg ? parseInt(limitArg, 10) : 3;
 
-  const vault = new VaultKeeper();
-  const summoner = new Summoner(vault);
+  const vault = new CredentialStore();
+  const resolver = new SageResolver(vault);
 
   const active: SageEntry[] = [];
   for (const meta of ALL_SAGE_PROFILES) {
     if (!meta.capabilities.includes('search')) continue;
-    if (!summoner.isConfigured(meta)) continue;
-    const instance = summoner.resolve(meta.id);
+    if (!resolver.isConfigured(meta)) continue;
+    const instance = resolver.resolve(meta.id);
     if (instance) active.push({ label: meta.label, instance });
   }
 
   if (active.length === 0) {
-    console.error('No search sages are bound. Set at least one API key environment variable or use /sages.');
+    console.error('No search sages are configured. Set at least one API key environment variable or use /sages.');
     process.exit(1);
   }
 
-  console.log(`\n🏛️ Loremaster Commune — "${query}"`);
+  console.log(`\nMulti Search — "${query}"`);
   console.log(`Sages: ${active.map((p) => p.label).join(', ')}\n`);
 
   const allResults: SearchResult[] = [];
@@ -62,7 +62,7 @@ async function main(): Promise<void> {
   }
 
   const unique = dedupe(allResults);
-  console.log(`\n📖 ${unique.length} unique results\n`);
+  console.log(`\n${unique.length} unique results\n`);
 
   for (const [i, r] of unique.entries()) {
     console.log(`[${i + 1}] ${r.title}`);

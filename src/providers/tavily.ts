@@ -2,7 +2,7 @@ import { tavily, type TavilyClient } from '@tavily/core';
 import type { SearchOptions, SearchResult, CrawlOptions, CrawlResult, SageProfile, ExtractResult } from '../types.js';
 import { Sage } from '../base.js';
 
-export interface TavilyContract {
+export interface TavilyConfig {
   apiKey: string;
 }
 
@@ -16,7 +16,7 @@ export class TavilySage extends Sage {
 
   private client: TavilyClient;
 
-  constructor(config: TavilyContract) {
+  constructor(config: TavilyConfig) {
     super();
     this.client = tavily({ apiKey: config.apiKey });
   }

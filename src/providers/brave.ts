@@ -2,7 +2,7 @@ import { BraveSearch } from 'brave-search';
 import type { SearchOptions, SearchResult, SageProfile } from '../types.js';
 import { Sage } from '../base.js';
 
-export interface BraveContract {
+export interface BraveConfig {
   apiKey: string;
 }
 
@@ -16,7 +16,7 @@ export class BraveSage extends Sage {
 
   private client: BraveSearch;
 
-  constructor(config: BraveContract) {
+  constructor(config: BraveConfig) {
     super();
     this.client = new BraveSearch(config.apiKey);
   }

@@ -1,5 +1,5 @@
 export type {
-  SageArt,
+  SageCapability,
   SageProfile,
   SearchResult,
   SearchOptions,
@@ -7,7 +7,7 @@ export type {
   CrawlResult,
   ExtractResult,
   Sage,
-  SageContract,
+  SageConfig,
 } from './types.js';
 
 export { Sage as SageBase } from './base.js';
@@ -18,26 +18,26 @@ export {
   ExaSage,
   BraveSage,
   DuckDuckGoSage,
-  type FirecrawlContract,
-  type TavilyContract,
-  type ExaContract,
-  type BraveContract,
-  type DuckDuckGoContract,
+  type FirecrawlConfig,
+  type TavilyConfig,
+  type ExaConfig,
+  type BraveConfig,
+  type DuckDuckGoConfig,
 } from './providers/index.js';
 
-export { VaultKeeper, maskKey } from './auth.js';
-export { SagesStorage } from './storage.js';
-export { Summoner } from './resolver.js';
+export { CredentialStore, maskKey } from './auth.js';
+export { SageConfigStore } from './storage.js';
+export { SageResolver } from './resolver.js';
 export { formatSearchResults, formatCrawlResults, formatExtractResults } from './formatter.js';
 export { renderSearchCall, renderSearchResult } from './renderer.js';
-export { assertSage, assertBound, assertAvailable } from './validator.js';
+export { assertSage, assertConfigured, assertAvailable } from './validator.js';
 export { registerCommands } from './commands.js';
 export {
   SAGE_CLASSES,
   ALL_SAGE_PROFILES,
   ALL_SAGE_IDS,
-  summonSage,
-  getSagesByArt,
+  resolveSage,
+  getSagesByCapability,
   isValidSageId,
 } from './registry.js';
-export { SummonOrder } from './selector.js';
+export { SageSelector } from './selector.js';

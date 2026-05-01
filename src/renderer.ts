@@ -4,7 +4,7 @@ import { Text, truncateToWidth } from '@mariozechner/pi-tui';
 export function renderSearchCall(args: Record<string, unknown>, theme: Theme): Text {
   const query = String(args.query ?? '');
   const limit = Number(args.limit ?? 5);
-  const label = theme.fg('toolTitle', theme.bold('scry '));
+  const label = theme.fg('toolTitle', theme.bold('search '));
   const meta = theme.fg('muted', `×${limit}`);
   const q = theme.fg('dim', `"${truncateToWidth(query, 60)}"`);
   return new Text(`${label}${meta} ${q}`, 0, 0);

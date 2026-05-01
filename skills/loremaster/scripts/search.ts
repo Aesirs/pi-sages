@@ -1,7 +1,7 @@
 import {
-  VaultKeeper,
-  Summoner,
-  SummonOrder,
+  CredentialStore,
+  SageResolver,
+  SageSelector,
   ALL_SAGE_PROFILES,
   type SearchResult,
   type SageProfile,
@@ -11,14 +11,14 @@ async function main(): Promise<void> {
   const [, , sageArg, query, limitArg] = process.argv;
 
   if (!query) {
-    console.error('Usage: scry.ts [sage] "query" [limit]');
-    console.error('If sage is omitted, the highest-priority bound sage is summoned.');
+    console.error('Usage: search.ts [sage] "query" [limit]');
+    console.error('If sage is omitted, the highest-priority configured sage is used.');
     process.exit(1);
   }
 
-  const vault = new VaultKeeper();
-  const summoner = new Summoner(vault);
-  const order = new SummonOrder(summoner);
+  const vault = new CredentialStore();
+  const resolver = new SageResolver(vault);
+  const selector = new SageSelector(resolver);
 
   let sageName: string;
   let actualQuery = query;
@@ -39,24 +39,24 @@ async function main(): Promise<void> {
   let selectedMeta: SageProfile;
 
   if (sageName === 'auto') {
-    const selected = order.select('search');
+    const selected = selector.select('search');
     if (!selected) {
-      console.error('No search sages are bound.');
-      console.error(order.buildAvailabilityMessage('search'));
+      console.error('No search sages are configured.');
+      console.error(selector.buildAvailabilityMessage('search'));
       process.exit(1);
     }
     selectedId = selected.id;
     selectedMeta = selected.meta;
-    console.log(`🔮 Summoned sage: ${selectedMeta.label} (${selectedId})`);
+    console.log(`Using sage: ${selectedMeta.label} (${selectedId})`);
   } else {
     selectedId = sageName;
     const meta = ALL_SAGE_PROFILES.find((m) => m.id === selectedId);
     if (!meta || !meta.capabilities.includes('search')) {
-      console.error(`Sage "${selectedId}" does not practice the art of search.`);
+      console.error(`Sage "${selectedId}" does not support search.`);
       process.exit(1);
     }
-    if (!summoner.isConfigured(meta)) {
-      console.error(`Sage "${selectedId}" is not bound.`);
+    if (!resolver.isConfigured(meta)) {
+      console.error(`Sage "${selectedId}" is not configured.`);
       process.exit(1);
     }
     selectedMeta = meta;
@@ -73,15 +73,15 @@ async function main(): Promise<void> {
     }
   }
 
-  const sage = summoner.resolve(selectedId);
+  const sage = resolver.resolve(selectedId);
   if (!sage) {
-    console.error(`Failed to summon sage: ${selectedId}`);
+    console.error(`Failed to resolve sage: ${selectedId}`);
     process.exit(1);
   }
 
   const results: SearchResult[] = await sage.search({ query: actualQuery, limit });
 
-  console.log(`\n🔮 ${selectedMeta.label} scries "${actualQuery}" (${results.length} results)\n`);
+  console.log(`\n${selectedMeta.label} search "${actualQuery}" (${results.length} results)\n`);
 
   for (const [i, r] of results.entries()) {
     console.log(`[${i + 1}] ${r.title}`);

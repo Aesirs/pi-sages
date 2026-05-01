@@ -1,12 +1,12 @@
-import { summonSage } from './registry.js';
-import { VaultKeeper } from './auth.js';
+import { resolveSage } from './registry.js';
+import { CredentialStore } from './auth.js';
 import type { SageProfile, Sage } from './types.js';
 
-export class Summoner {
-  constructor(private auth: VaultKeeper) {}
+export class SageResolver {
+  constructor(private auth: CredentialStore) {}
 
   resolve(id: string): Sage | null {
-    return summonSage(id, this.auth.get(id));
+    return resolveSage(id, this.auth.get(id));
   }
 
   isConfigured(meta: SageProfile): boolean {

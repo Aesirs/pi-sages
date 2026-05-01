@@ -1,9 +1,9 @@
 import type { ExtensionAPI } from '@mariozechner/pi-coding-agent';
 import { Type } from 'typebox';
 import {
-  VaultKeeper,
-  Summoner,
-  SummonOrder,
+  CredentialStore,
+  SageResolver,
+  SageSelector,
   formatSearchResults,
   formatCrawlResults,
   formatExtractResults,
@@ -16,21 +16,21 @@ import {
 } from '../src/index.js';
 
 export default function sagesExtension(pi: ExtensionAPI) {
-  const vault = new VaultKeeper();
-  const summoner = new Summoner(vault);
-  const order = new SummonOrder(summoner);
+  const vault = new CredentialStore();
+  const resolver = new SageResolver(vault);
+  const selector = new SageSelector(resolver);
 
   // ─── Tools ─────────────────────────────────────────────────────────────────
 
   pi.registerTool({
-    name: 'scry',
-    label: 'Scry',
+    name: 'search',
+    label: 'Search',
     description:
-      'Gaze into the weave of knowledge to find information, documentation, facts, or news. Returns titles, URLs, and content snippets. The highest-priority bound sage is summoned automatically.',
+      'Search the web for current information, documentation, facts, or news. Returns titles, URLs, and content snippets. The highest-priority configured sage is selected automatically.',
     promptSnippet: 'Search the web for current information, documentation, facts, or news',
     promptGuidelines: [
-      'Use scry when the user asks about recent events, technologies, or facts that may not be in training data.',
-      'Use scry when the user asks to find documentation, tutorials, or external resources.',
+      'Use search when the user asks about recent events, technologies, or facts that may not be in training data.',
+      'Use search when the user asks to find documentation, tutorials, or external resources.',
     ],
     parameters: Type.Object({
       query: Type.String({ description: 'Search query string' }),
@@ -39,13 +39,13 @@ export default function sagesExtension(pi: ExtensionAPI) {
     renderCall: renderSearchCall,
     renderResult: renderSearchResult,
     async execute(_toolCallId, params, _signal, onUpdate) {
-      const selected = order.select('search');
-      assertAvailable(selected?.meta ?? null, 'search', order.buildAvailabilityMessage('search'));
+      const selected = selector.select('search');
+      assertAvailable(selected?.meta ?? null, 'search', selector.buildAvailabilityMessage('search'));
       const { meta, id } = selected!;
 
-      onUpdate?.({ content: [{ type: 'text', text: `Summoning ${meta.label} to scry for "${params.query}"...` }], details: {} });
+      onUpdate?.({ content: [{ type: 'text', text: `Using ${meta.label} to search for "${params.query}"...` }], details: {} });
 
-      const sage = summoner.resolve(id)!;
+      const sage = resolver.resolve(id)!;
       const results = await sage.search({ query: params.query, limit: params.limit ?? 5 });
 
       return {
@@ -56,26 +56,26 @@ export default function sagesExtension(pi: ExtensionAPI) {
   });
 
   pi.registerTool({
-    name: 'delve',
-    label: 'Delve',
-    description: 'Descend into a URL, exploring its depths to extract full page content as markdown and metadata. The highest-priority bound sage is summoned automatically.',
+    name: 'crawl',
+    label: 'Crawl',
+    description: 'Crawl a website to extract full page content as markdown and metadata. The highest-priority configured sage is selected automatically.',
     promptSnippet: 'Crawl a website to extract full page content as markdown',
     promptGuidelines: [
-      'Use delve when the user asks to extract content from a specific URL or website.',
-      'Use delve to read documentation pages, blog posts, or articles that are too large for a simple search snippet.',
+      'Use crawl when the user asks to extract content from a specific URL or website.',
+      'Use crawl to read documentation pages, blog posts, or articles that are too large for a simple search snippet.',
     ],
     parameters: Type.Object({
-      url: Type.String({ description: 'URL to delve into' }),
+      url: Type.String({ description: 'URL to crawl' }),
       limit: Type.Optional(Type.Number({ description: 'Max pages (default: 5)', default: 5 })),
     }),
     async execute(_toolCallId, params, _signal, onUpdate) {
-      const selected = order.select('crawl');
-      assertAvailable(selected?.meta ?? null, 'crawl', order.buildAvailabilityMessage('crawl'));
+      const selected = selector.select('crawl');
+      assertAvailable(selected?.meta ?? null, 'crawl', selector.buildAvailabilityMessage('crawl'));
       const { meta, id } = selected!;
 
-      onUpdate?.({ content: [{ type: 'text', text: `Delving into ${params.url} with ${meta.label}...` }], details: {} });
+      onUpdate?.({ content: [{ type: 'text', text: `Crawling ${params.url} with ${meta.label}...` }], details: {} });
 
-      const sage = summoner.resolve(id)!;
+      const sage = resolver.resolve(id)!;
       const results = await sage.crawl!({ url: params.url, limit: params.limit ?? 5 });
 
       return {
@@ -86,24 +86,24 @@ export default function sagesExtension(pi: ExtensionAPI) {
   });
 
   pi.registerTool({
-    name: 'decipher',
-    label: 'Decipher',
+    name: 'extract',
+    label: 'Extract',
     description:
-      'Study specific URLs closely, extracting their essence as structured lore. Returns title, markdown/text content, and images for each page. More precise than delve for known URLs. The highest-priority bound sage is summoned automatically.',
+      'Extract full content from specific URLs as markdown or text. Returns title, content, and images for each page. More precise than crawl for known URLs. The highest-priority configured sage is selected automatically.',
     promptSnippet: 'Extract full content from specific URLs as markdown or text',
     promptGuidelines: [
-      'Use decipher when the user provides specific URLs and wants their full content.',
-      'Use decipher instead of delve when you already know the exact pages to read.',
-      'decipher supports up to 20 URLs in a single call.',
+      'Use extract when the user provides specific URLs and wants their full content.',
+      'Use extract instead of crawl when you already know the exact pages to read.',
+      'extract supports up to 20 URLs in a single call.',
     ],
     parameters: Type.Object({
       urls: Type.Optional(
         Type.Union([
-          Type.String({ description: 'Single URL or list of URLs to decipher' }),
-          Type.Array(Type.String({ description: 'URL to decipher' }), { description: 'List of URLs' }),
+          Type.String({ description: 'Single URL or list of URLs to extract' }),
+          Type.Array(Type.String({ description: 'URL to extract' }), { description: 'List of URLs' }),
         ]),
       ),
-      url: Type.Optional(Type.String({ description: 'Single URL to decipher (alternative to urls)' })),
+      url: Type.Optional(Type.String({ description: 'Single URL to extract (alternative to urls)' })),
       extractDepth: Type.Optional(
         Type.String({ description: 'Depth: basic or advanced. Default: basic.', default: 'basic' }),
       ),
@@ -112,17 +112,17 @@ export default function sagesExtension(pi: ExtensionAPI) {
       ),
     }),
     async execute(_toolCallId, params, _signal, onUpdate) {
-      const selected = order.select('extract');
-      assertAvailable(selected?.meta ?? null, 'extract', order.buildAvailabilityMessage('extract'));
+      const selected = selector.select('extract');
+      assertAvailable(selected?.meta ?? null, 'extract', selector.buildAvailabilityMessage('extract'));
       const { meta, id } = selected!;
 
       const rawUrls = params.urls ?? params.url;
       if (!rawUrls) throw new Error('At least one URL is required.');
       const urls = Array.isArray(rawUrls) ? rawUrls : [rawUrls];
 
-      onUpdate?.({ content: [{ type: 'text', text: `Deciphering ${urls.length} URL(s) via ${meta.label}...` }], details: {} });
+      onUpdate?.({ content: [{ type: 'text', text: `Extracting ${urls.length} URL(s) via ${meta.label}...` }], details: {} });
 
-      const sage = summoner.resolve(id)!;
+      const sage = resolver.resolve(id)!;
       const results = await sage.extract!(urls, {
         extractDepth: (params.extractDepth as 'basic' | 'advanced') ?? 'basic',
         format: (params.format as 'markdown' | 'text') ?? 'markdown',
@@ -136,12 +136,12 @@ export default function sagesExtension(pi: ExtensionAPI) {
   });
 
   pi.registerTool({
-    name: 'commune',
-    label: 'Commune',
-    description: 'Convene the full council of sages to research from every angle. Search across all bound sages simultaneously and return deduplicated results.',
+    name: 'multiSearch',
+    label: 'Multi Search',
+    description: 'Search across all configured sages simultaneously and return deduplicated results.',
     promptSnippet: 'Run the same query across multiple search engines and merge results',
     promptGuidelines: [
-      'Use commune when the user needs comprehensive research from multiple sources.',
+      'Use multiSearch when the user needs comprehensive research from multiple sources.',
       'Results are deduplicated by URL across all sages.',
     ],
     parameters: Type.Object({
@@ -157,16 +157,16 @@ export default function sagesExtension(pi: ExtensionAPI) {
         if (!meta.capabilities.includes('search')) continue;
         const key = vault.get(meta.id);
         if (!meta.needsKey || key) {
-          const instance = summoner.resolve(meta.id);
+          const instance = resolver.resolve(meta.id);
           if (instance) active.push({ label: meta.label, instance });
         }
       }
 
       if (active.length === 0) {
-        throw new Error('No search sages are bound. Use /sages to add API keys.');
+        throw new Error('No search sages are configured. Use /sages to add API keys.');
       }
 
-      onUpdate?.({ content: [{ type: 'text', text: `Communing with ${active.length} sages for "${params.query}"...` }], details: {} });
+      onUpdate?.({ content: [{ type: 'text', text: `Searching with ${active.length} sages for "${params.query}"...` }], details: {} });
 
       for (const { label, instance } of active) {
         try {
@@ -193,5 +193,5 @@ export default function sagesExtension(pi: ExtensionAPI) {
   });
 
   // ─── Commands ──────────────────────────────────────────────────────────────
-  registerCommands(pi, vault, order);
+  registerCommands(pi, vault, selector);
 }

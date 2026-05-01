@@ -1,6 +1,6 @@
 ---
 name: loremaster
-description: Web research skill powered by the Sages. Guides the model on when and how to use scry, delve, decipher, and commune for searching, crawling, and extracting web content. Summon order picks the best available sage automatically.
+description: Web research skill powered by the Sages. Guides the model on when and how to use search, crawl, extract, and multiSearch for searching, crawling, and extracting web content. Priority selector picks the best available sage automatically.
 ---
 
 # Loremaster
@@ -11,44 +11,44 @@ Use this skill when the user needs web research, current information, documentat
 
 When running inside pi with the Sages extension, use these tools directly:
 
-### `scry` — Web Search
-Gaze into the weave of knowledge. Use for:
+### `search` — Web Search
+Search the web for information. Use for:
 - Current events, news, or recent developments
 - Finding documentation, tutorials, or libraries
 - Verifying facts or gathering context on a topic
 
-The highest-priority configured sage is summoned automatically based on your summon order.
+The highest-priority configured sage is selected automatically based on your priority list.
 
-### `delve` — Crawl URL
-Descend into a URL to extract full page content as markdown. Use for:
+### `crawl` — Crawl URL
+Crawl a URL to extract full page content as markdown. Use for:
 - Reading full documentation pages too large for a search snippet
 - Extracting content from blog posts or articles
 - When the user provides a specific URL to explore
 
-### `decipher` — Extract Structured Content
-Study specific URLs closely. Use for:
+### `extract` — Extract Structured Content
+Extract content from specific URLs. Use for:
 - Precise extraction from known URLs
 - When you already know the exact pages to read
 - Supports up to 20 URLs in a single call
 
-Prefer `decipher` over `delve` when you already know the target URLs.
+Prefer `extract` over `crawl` when you already know the target URLs.
 
-### `commune` — Multi-Provider Search
-Convene the full council of sages. Use for:
+### `multiSearch` — Multi-Provider Search
+Search across all configured sages simultaneously. Use for:
 - Comprehensive research from multiple angles
 - When you need broader coverage or cross-validation
 - Results are deduplicated by URL across all sages
 
-## Summon Order
+## Priority
 
-Sages are summoned automatically based on priority. Default order:
-1. Tavily — scry, delve, decipher
-2. Brave — scry
-3. Firecrawl — scry, delve, decipher
-4. Exa — scry, delve, decipher
-5. DuckDuckGo — scry (no API key needed)
+Sages are selected automatically based on priority. Default order:
+1. Tavily — search, crawl, extract
+2. Brave — search
+3. Firecrawl — search, crawl, extract
+4. Exa — search, crawl, extract
+5. DuckDuckGo — search (no API key needed)
 
-The first sage in the order that supports the requested art and has a configured API key is used.
+The first sage in the priority list that supports the requested capability and has a configured API key is used.
 
 ## Standalone Scripts (CLI usage outside pi)
 
@@ -60,19 +60,19 @@ cd /path/to/pi-sages && npm install
 
 Search:
 ```bash
-npx tsx skills/loremaster/scripts/scry.ts "query" [limit]
-npx tsx skills/loremaster/scripts/scry.ts tavily "query" 5
+npx tsx skills/loremaster/scripts/search.ts "query" [limit]
+npx tsx skills/loremaster/scripts/search.ts tavily "query" 5
 ```
 
 Crawl:
 ```bash
-npx tsx skills/loremaster/scripts/delve.ts <url> [limit]
-npx tsx skills/loremaster/scripts/delve.ts firecrawl "https://example.com" 5
+npx tsx skills/loremaster/scripts/crawl.ts <url> [limit]
+npx tsx skills/loremaster/scripts/crawl.ts firecrawl "https://example.com" 5
 ```
 
 Multi-provider:
 ```bash
-npx tsx skills/loremaster/scripts/commune.ts "query" [limit-per-sage]
+npx tsx skills/loremaster/scripts/multiSearch.ts "query" [limit-per-sage]
 ```
 
 ## Setup

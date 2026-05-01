@@ -3,7 +3,7 @@ import { TavilySage } from './providers/tavily.js';
 import { ExaSage } from './providers/exa.js';
 import { BraveSage } from './providers/brave.js';
 import { DuckDuckGoSage } from './providers/duckduckgo.js';
-import type { Sage, SageArt, SageProfile } from './types.js';
+import type { Sage, SageCapability, SageProfile } from './types.js';
 
 /** All sage classes that can be instantiated. */
 export const SAGE_CLASSES = [
@@ -21,7 +21,7 @@ export const ALL_SAGE_PROFILES: SageProfile[] = SAGE_CLASSES.map((cls) => cls.me
 export const ALL_SAGE_IDS: string[] = ALL_SAGE_PROFILES.map((m) => m.id);
 
 /** Instantiate a sage by ID with an API key. Returns null if the sage needs a key and none is provided. */
-export function summonSage(id: string, apiKey?: string): Sage | null {
+export function resolveSage(id: string, apiKey?: string): Sage | null {
   const cls = SAGE_CLASSES.find((c) => c.metadata.id === id);
   if (!cls) return null;
 
@@ -30,10 +30,10 @@ export function summonSage(id: string, apiKey?: string): Sage | null {
   return new cls({ apiKey: apiKey ?? '' });
 }
 
-/** Get sage IDs that practice a given art. */
-export function getSagesByArt(art: SageArt): string[] {
+/** Get sage IDs that support a given capability. */
+export function getSagesByCapability(capability: SageCapability): string[] {
   return SAGE_CLASSES
-    .filter((cls) => cls.metadata.capabilities.includes(art))
+    .filter((cls) => cls.metadata.capabilities.includes(capability))
     .map((cls) => cls.metadata.id);
 }
 
