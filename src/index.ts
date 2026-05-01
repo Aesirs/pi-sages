@@ -26,6 +26,7 @@ export {
 } from './providers/index.js';
 
 export { VaultKeeper, maskKey } from './auth.js';
+export { SagesStorage } from './storage.js';
 export { Summoner } from './resolver.js';
 export { formatSearchResults, formatCrawlResults, formatExtractResults } from './formatter.js';
 export { renderSearchCall, renderSearchResult } from './renderer.js';

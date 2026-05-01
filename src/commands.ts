@@ -9,8 +9,8 @@ function buildStatusMessage(vault: VaultKeeper, order: SummonOrder): string {
     const { configured, source } = vault.status(meta);
     const icon = configured ? '🟢' : '🔴';
     const src = meta.needsKey
-      ? source === 'auth'
-        ? 'auth.json'
+      ? source === 'stored'
+        ? 'sages.json'
         : source === 'env'
           ? 'env var'
           : 'not set'
@@ -44,7 +44,7 @@ async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promi
         if (!meta.needsKey) continue;
         const masked = vault.peek(meta.id);
         if (masked) {
-          lines.push(`  ${meta.id}: ${masked} (auth.json)`);
+          lines.push(`  ${meta.id}: ${masked} (sages.json)`);
           hasAny = true;
         } else {
           lines.push(`  ${meta.id}: not set`);
@@ -62,7 +62,7 @@ async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promi
         const { source } = vault.status(meta);
         const stored = vault.peek(meta.id);
         if (stored) {
-          lines.push(`  ${meta.label} (${meta.id}): ${stored} (auth.json)`);
+          lines.push(`  ${meta.label} (${meta.id}): ${stored} (sages.json)`);
         } else if (source === 'env') {
           lines.push(`  ${meta.label} (${meta.id}): from env var`);
         } else {
@@ -88,7 +88,7 @@ async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promi
       }
 
       vault.set(meta.id, key.trim());
-      ctx.ui.notify(`Contract signed with ${meta.label} (${maskKey(key.trim())}) → auth.json`, 'info');
+      ctx.ui.notify(`Contract signed with ${meta.label} (${maskKey(key.trim())}) → sages.json`, 'info');
       continue;
     }
 
@@ -116,7 +116,7 @@ async function manageContracts(vault: VaultKeeper, ctx: ExtensionContext): Promi
       }
 
       vault.remove(meta.id);
-      ctx.ui.notify(`Broke contract with ${meta.label}. Key removed from auth.json.`, 'info');
+      ctx.ui.notify(`Broke contract with ${meta.label}. Key removed from sages.json.`, 'info');
       continue;
     }
   }
@@ -188,14 +188,14 @@ export function registerCommands(pi: ExtensionAPI, vault: VaultKeeper, order: Su
           return;
         }
         vault.set(id, key);
-        ctx.ui.notify(`Contract signed with ${meta.label} (${maskKey(key)}) → auth.json`, 'info');
+        ctx.ui.notify(`Contract signed with ${meta.label} (${maskKey(key)}) → sages.json`, 'info');
         return;
       }
       if (parts[0] === 'clear-key' && parts.length >= 2) {
         const id = parts[1]!.toLowerCase();
         if (vault.has(id)) {
           vault.remove(id);
-          ctx.ui.notify(`Broke contract with ${id}. Key removed from auth.json.`, 'info');
+          ctx.ui.notify(`Broke contract with ${id}. Key removed from sages.json.`, 'info');
         } else {
           ctx.ui.notify(`No stored contract with ${id}.`, 'info');
         }

@@ -1,7 +1,5 @@
-import { AuthStorage } from '@mariozechner/pi-coding-agent';
 import type { SageProfile } from './types.js';
-
-const AUTH_PREFIX = 'sage-';
+import { SagesStorage } from './storage.js';
 
 export function maskKey(key: string): string {
   if (key.length <= 8) return '***';
@@ -9,45 +7,41 @@ export function maskKey(key: string): string {
 }
 
 export class VaultKeeper {
-  private storage: AuthStorage;
+  private storage: SagesStorage;
 
   constructor() {
-    this.storage = AuthStorage.create();
-  }
-
-  private keyName(name: string): string {
-    return `${AUTH_PREFIX}${name}`;
+    this.storage = new SagesStorage();
   }
 
   get(name: string): string | undefined {
     if (name === 'duckduckgo') return 'none';
-    const cred = this.storage.get(this.keyName(name));
-    if (cred?.type === 'api_key') return cred.key;
+    const key = this.storage.getApiKey(name);
+    if (key) return key;
     return process.env[`${name.toUpperCase()}_API_KEY`];
   }
 
   /** Return the masked stored key, or undefined if none. */
   peek(name: string): string | undefined {
-    const cred = this.storage.get(this.keyName(name));
-    return cred?.type === 'api_key' ? maskKey(cred.key) : undefined;
+    const key = this.storage.getApiKey(name);
+    return key ? maskKey(key) : undefined;
   }
 
   set(name: string, key: string): void {
-    this.storage.set(this.keyName(name), { type: 'api_key', key });
+    this.storage.setApiKey(name, key);
   }
 
   has(name: string): boolean {
-    return this.storage.has(this.keyName(name));
+    return this.storage.hasApiKey(name);
   }
 
   remove(name: string): void {
-    this.storage.remove(this.keyName(name));
+    this.storage.removeApiKey(name);
   }
 
-  status(meta: SageProfile): { configured: boolean; source: 'auth' | 'env' | 'none' } {
+  status(meta: SageProfile): { configured: boolean; source: 'stored' | 'env' | 'none' } {
     if (!meta.needsKey) return { configured: true, source: 'env' };
-    const cred = this.storage.get(this.keyName(meta.id));
-    if (cred?.type === 'api_key') return { configured: true, source: 'auth' };
+    const key = this.storage.getApiKey(meta.id);
+    if (key) return { configured: true, source: 'stored' };
     if (process.env[`${meta.id.toUpperCase()}_API_KEY`]) return { configured: true, source: 'env' };
     return { configured: false, source: 'none' };
   }

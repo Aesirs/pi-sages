@@ -1,18 +1,22 @@
 import { Summoner } from './resolver.js';
 import { ALL_SAGE_PROFILES } from './registry.js';
+import { SagesStorage } from './storage.js';
 import type { SageArt, SageProfile } from './types.js';
 
 const DEFAULT_SUMMON_ORDER = ['tavily', 'brave', 'firecrawl', 'exa', 'duckduckgo'];
 
 export class SummonOrder {
   private order: string[];
+  private storage: SagesStorage;
 
   constructor(
     private summoner: Summoner,
     customOrder?: string[],
   ) {
+    this.storage = new SagesStorage();
     const env = this.loadEnvOrder();
-    this.order = env ?? customOrder ?? [...DEFAULT_SUMMON_ORDER];
+    const stored = this.storage.getSummonOrder();
+    this.order = env ?? customOrder ?? stored ?? [...DEFAULT_SUMMON_ORDER];
   }
 
   private loadEnvOrder(): string[] | undefined {
@@ -29,6 +33,7 @@ export class SummonOrder {
 
   setOrder(providers: string[]): void {
     this.order = providers;
+    this.storage.setSummonOrder(providers);
   }
 
   getOrder(): string[] {

@@ -67,7 +67,7 @@ export FIRECRAWL_API_KEY="fc-..."
 export EXA_API_KEY="exa-..."
 ```
 
-Or use `/sages` to manage keys interactively (stored in auth.json).
+Or use `/sages` to manage keys interactively (stored in `sages.json`).
 
 ## 📜 Skill: Loremaster
 
